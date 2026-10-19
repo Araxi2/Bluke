@@ -47,6 +47,28 @@ jobs:
           name: bluke-debug-${{ steps.get_version.outputs.version }}
           path: app/build/outputs/apk/debug/app-debug.apk
 
+      # Personal fork: publish each main build as a GitHub Release so the APK can be
+      # downloaded directly (stable link: releases/latest/download/bluke-numpadfix.apk)
+      - name: Rename Debug APK for Release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: cp app/build/outputs/apk/debug/app-debug.apk bluke-numpadfix.apk
+
+      - name: Publish Debug APK Release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: numpadfix-${{ github.run_number }}
+          name: Bluke numpad fix (build ${{ github.run_number }})
+          target_commitish: ${{ github.sha }}
+          body: |
+            Personal debug build of Bluke ${{ steps.get_version.outputs.version }} with the numpad and AZERTY fixes.
+            Installs alongside the official app as "Bluke (numpad fix)".
+            Source: ${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}
+          files: bluke-numpadfix.apk
+          make_latest: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   release:
     name: Build & Publish Release
     runs-on: ubuntu-latest
