@@ -62,6 +62,9 @@ android {
       isShrinkResources = true
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
       signingConfig = signingConfigs.getByName("release")
+      // Personal build: installs alongside the official app
+      applicationIdSuffix = ".numpadfix"
+      versionNameSuffix = "-numpadfix"
     }
     debug {
       // Personal build: installs alongside the official app

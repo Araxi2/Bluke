@@ -47,11 +47,31 @@ jobs:
           name: bluke-debug-${{ steps.get_version.outputs.version }}
           path: app/build/outputs/apk/debug/app-debug.apk
 
-      # Personal fork: publish each main build as a GitHub Release so the APK can be
-      # downloaded directly (stable link: releases/latest/download/bluke-numpadfix.apk)
-      - name: Rename Debug APK for Release
+      # Personal fork: build an optimized (minified, signed) release APK on each push to main
+      # and publish it as a GitHub Release (stable link: releases/latest/download/bluke-numpadfix.apk).
+      # Signed with the fork's own key from the KEYSTORE_* / KEY_* repository secrets, so
+      # each new build installs over the previous one.
+      - name: Decode Release Keystore
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: cp app/build/outputs/apk/debug/app-debug.apk bluke-numpadfix.apk
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "::error::Repository secret KEYSTORE_BASE64 is missing"
+            exit 1
+          fi
+          echo "$KEYSTORE_BASE64" | base64 --decode > ${{ github.workspace }}/release-signing-key.jks
+
+      - name: Build Optimized Release APK
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          KEYSTORE_PATH: ${{ github.workspace }}/release-signing-key.jks
+          STORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          ./gradlew assembleRelease
+          cp app/build/outputs/apk/release/app-release.apk bluke-numpadfix.apk
 
       - name: Publish Debug APK Release
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -61,7 +81,7 @@ jobs:
           name: Bluke numpad fix (build ${{ github.run_number }})
           target_commitish: ${{ github.sha }}
           body: |
-            Personal debug build of Bluke ${{ steps.get_version.outputs.version }} with the numpad and AZERTY fixes.
+            Optimized personal build of Bluke ${{ steps.get_version.outputs.version }} with the numpad and AZERTY fixes.
             Installs alongside the official app as "Bluke (numpad fix)".
             Source: ${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}
           files: bluke-numpadfix.apk
