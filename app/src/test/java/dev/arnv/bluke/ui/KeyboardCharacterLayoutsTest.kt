@@ -14,12 +14,16 @@ class KeyboardCharacterLayoutsTest {
         val physicalQ = keys.single { it.physicalKeyCode == KeyboardLayouts.KEY_Q }
         val physicalA = keys.single { it.physicalKeyCode == KeyboardLayouts.KEY_A }
         val physicalSemicolon = keys.single { it.physicalKeyCode == KeyboardLayouts.KEY_SEMICOLON }
+        val physical1 = keys.single { it.physicalKeyCode == KeyboardLayouts.KEY_1 }
         assertEquals("A", physicalQ.legend)
-        assertEquals(KeyboardLayouts.KEY_A, physicalQ.keyCode)
+        assertEquals(KeyboardLayouts.KEY_Q, physicalQ.keyCode)
         assertEquals("Q", physicalA.legend)
-        assertEquals(KeyboardLayouts.KEY_Q, physicalA.keyCode)
+        assertEquals(KeyboardLayouts.KEY_A, physicalA.keyCode)
         assertEquals("M", physicalSemicolon.legend)
-        assertEquals(KeyboardLayouts.KEY_M, physicalSemicolon.keyCode)
+        assertEquals(KeyboardLayouts.KEY_SEMICOLON, physicalSemicolon.keyCode)
+        assertEquals("&", physical1.legend)
+        assertEquals("1", physical1.shiftedLegend)
+        assertEquals(KeyboardLayouts.KEY_1, physical1.keyCode)
     }
 
     @Test

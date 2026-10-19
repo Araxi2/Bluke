@@ -53,14 +53,36 @@ private fun KeyboardCharacterLayout.legendOverrides(): Map<Int, KeyLegend> = whe
         KeyboardLayouts.KEY_Y to KeyLegend("Z"),
         KeyboardLayouts.KEY_Z to KeyLegend("Y"),
     )
+    // French AZERTY for a host set to French: legends follow the AZERTY keycaps while the
+    // physical HID usages are kept, so the host's own layout produces the right characters
+    // (same approach as Russian ЙЦУКЕН).
     KeyboardCharacterLayout.FRENCH_AZERTY -> mapOf(
-        KeyboardLayouts.KEY_Q to KeyLegend("A"),
-        KeyboardLayouts.KEY_W to KeyLegend("Z"),
-        KeyboardLayouts.KEY_A to KeyLegend("Q"),
-        KeyboardLayouts.KEY_Z to KeyLegend("W"),
-        KeyboardLayouts.KEY_SEMICOLON to KeyLegend("M"),
-        KeyboardLayouts.KEY_M to KeyLegend(",", "<"),
-        KeyboardLayouts.KEY_COMMA to KeyLegend(";", "."),
+        physicalLegend(KeyboardLayouts.KEY_GRAVE, "²"),
+        physicalLegend(KeyboardLayouts.KEY_1, "&", "1"),
+        physicalLegend(KeyboardLayouts.KEY_2, "é", "2"),
+        physicalLegend(KeyboardLayouts.KEY_3, "\"", "3"),
+        physicalLegend(KeyboardLayouts.KEY_4, "'", "4"),
+        physicalLegend(KeyboardLayouts.KEY_5, "(", "5"),
+        physicalLegend(KeyboardLayouts.KEY_6, "-", "6"),
+        physicalLegend(KeyboardLayouts.KEY_7, "è", "7"),
+        physicalLegend(KeyboardLayouts.KEY_8, "_", "8"),
+        physicalLegend(KeyboardLayouts.KEY_9, "ç", "9"),
+        physicalLegend(KeyboardLayouts.KEY_0, "à", "0"),
+        physicalLegend(KeyboardLayouts.KEY_MINUS, ")", "°"),
+        physicalLegend(KeyboardLayouts.KEY_EQUAL, "=", "+"),
+        physicalLegend(KeyboardLayouts.KEY_Q, "A"),
+        physicalLegend(KeyboardLayouts.KEY_W, "Z"),
+        physicalLegend(KeyboardLayouts.KEY_LBRACKET, "^", "¨"),
+        physicalLegend(KeyboardLayouts.KEY_RBRACKET, "$", "£"),
+        physicalLegend(KeyboardLayouts.KEY_BACKSLASH, "*", "µ"),
+        physicalLegend(KeyboardLayouts.KEY_A, "Q"),
+        physicalLegend(KeyboardLayouts.KEY_SEMICOLON, "M"),
+        physicalLegend(KeyboardLayouts.KEY_APOSTROPHE, "ù", "%"),
+        physicalLegend(KeyboardLayouts.KEY_Z, "W"),
+        physicalLegend(KeyboardLayouts.KEY_M, ",", "?"),
+        physicalLegend(KeyboardLayouts.KEY_COMMA, ";", "."),
+        physicalLegend(KeyboardLayouts.KEY_PERIOD, ":", "/"),
+        physicalLegend(KeyboardLayouts.KEY_SLASH, "!", "§"),
     )
     KeyboardCharacterLayout.DVORAK -> legendMap(
         KeyboardLayouts.KEY_Q to "'", KeyboardLayouts.KEY_W to ",",
