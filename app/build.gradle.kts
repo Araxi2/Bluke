@@ -64,6 +64,9 @@ android {
       signingConfig = signingConfigs.getByName("release")
     }
     debug {
+      // Personal build: installs alongside the official app
+      applicationIdSuffix = ".numpadfix"
+      versionNameSuffix = "-numpadfix"
     }
   }
   compileOptions {

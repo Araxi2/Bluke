@@ -48,7 +48,10 @@ import androidx.core.content.edit
 import dev.arnv.bluke.R
 import dev.arnv.bluke.QuickCycleActivity
 import dev.arnv.bluke.data.KeyboardThemeRepository
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlin.math.roundToInt
 
 enum class TrackpadButtonMode(val displayName: String) {
@@ -104,14 +107,26 @@ fun TouchpadView(
         }
     }
 
-    // Capture standard top-row numeric inputs for keyboard emulation
+    // Numpad key events (HID Keypad usages).
+    // The mutex serializes presses/releases so a release can't overtake a press delayed by the Num Lock step.
+    val numpadKeyMutex = remember { Mutex() }
     val simulateKeyPress = { keyCode: Int, isPress: Boolean ->
         scope.launch {
-            if (isPress) {
-                triggerVibration(15)
-                btManager.sendKey(keyCode, true)
-            } else {
-                btManager.sendKey(keyCode, false)
+            numpadKeyMutex.withLock {
+                if (isPress) {
+                    triggerVibration(15)
+                    // Keypad digits and "." act as navigation keys when the host's Num Lock is off:
+                    // turn it on first (state comes from the host's LED report)
+                    if (keyCode in 0x59..0x63 && !btManager.numLockState.value) {
+                        btManager.sendKey(0x53, true)
+                        delay(20)
+                        btManager.sendKey(0x53, false)
+                        delay(20)
+                    }
+                    btManager.sendKey(keyCode, true)
+                } else {
+                    btManager.sendKey(keyCode, false)
+                }
             }
         }
         Unit
@@ -582,25 +597,26 @@ private fun MechanicalModifierKey(
 @Composable
 fun NumpadLedGrid(onKeyPress: (Int, Boolean) -> Unit) {
     val getKeyCode: (String) -> Int = { char ->
+        // HID Keypad usage IDs: layout-independent, unlike the main-row digit keys
         when (char) {
-            "1" -> 0x1E
-            "2" -> 0x1F
-            "3" -> 0x20
-            "4" -> 0x21
-            "5" -> 0x22
-            "6" -> 0x23
-            "7" -> 0x24
-            "8" -> 0x25
-            "9" -> 0x26
-            "0" -> 0x27
-            "." -> 0x37
-            "/" -> 0x38
-            "*" -> 0x25
-            "-" -> 0x2D
-            "+" -> 0x2E
+            "1" -> 0x59
+            "2" -> 0x5A
+            "3" -> 0x5B
+            "4" -> 0x5C
+            "5" -> 0x5D
+            "6" -> 0x5E
+            "7" -> 0x5F
+            "8" -> 0x60
+            "9" -> 0x61
+            "0" -> 0x62
+            "." -> 0x63
+            "/" -> 0x54
+            "*" -> 0x55
+            "-" -> 0x56
+            "+" -> 0x57
             "⌫" -> 0x2A
-            "Enter" -> 0x28
-            "%" -> 0x22
+            "Enter" -> 0x58
+            "Num" -> 0x53
             "=" -> 0x2E
             else -> 0x2C
         }
@@ -615,7 +631,7 @@ fun NumpadLedGrid(onKeyPress: (Int, Boolean) -> Unit) {
             val cols = listOf(
                 listOf("7", "4", "1", "0"),
                 listOf("8", "5", "2", "."),
-                listOf("9", "6", "3", "%"),
+                listOf("9", "6", "3", "Num"),
                 listOf("/", "*", "-", "+")
             )
             
